@@ -1,13 +1,12 @@
 package BankingManagementSystem;
 
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.sql.*;
+import java.util.Properties;
 import java.util.Scanner;
 
 public class BankingApp {
-    private static final String url = "jdbc:mysql://localhost:3306/banking_system";
-    private static final String username = "root";
-    private static final String password = "Sachi$#@123";
-
     public static void main(String[] args) throws ClassNotFoundException, SQLException {
         try{
             Class.forName("com.mysql.cj.jdbc.Driver");
@@ -15,6 +14,11 @@ public class BankingApp {
             System.out.println(e.getMessage());
         }
         try{
+            Properties dbProperties = loadDatabaseProperties();
+            String url = dbProperties.getProperty("db.url");
+            String username = dbProperties.getProperty("db.username");
+            String password = dbProperties.getProperty("db.password");
+
             Connection connection = DriverManager.getConnection(url, username, password);
             Scanner scanner =  new Scanner(System.in);
             User user = new User(connection, scanner);
@@ -99,8 +103,16 @@ public class BankingApp {
                         break;
                 }
             }
-        }catch (SQLException e){
+        }catch (SQLException | IOException e){
             e.printStackTrace();
         }
+    }
+
+    private static Properties loadDatabaseProperties() throws IOException {
+        Properties properties = new Properties();
+        try (FileInputStream inputStream = new FileInputStream("db.properties")) {
+            properties.load(inputStream);
+        }
+        return properties;
     }
 }
